@@ -1,56 +1,134 @@
-# Welcome to your Expo app 👋
+# HB+ Google Auth (React Native + Expo)
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A cross-platform app (Web, Android, iOS) built with React Native and React Native for Web from a single codebase. Users sign in with Google, and access is restricted to one email domain (`@hbplus.fit`).
 
-## Get started
+**Live demo:** https://hbplusassignment.netlify.app
 
-1. Install dependencies
+## Tech stack
 
+- React Native + React Native for Web (Expo, Expo Router)
+- Firebase Authentication (Google OAuth 2.0)
+- Cloud Firestore (stores user profiles)
+- Netlify (hosting)
+
+## Features
+
+- Google Sign-In button
+- Email domain validation
+- Protected dashboard page
+- Logout
+- Loading state during authentication
+- Error handling with a clear message for blocked domains
+- Responsive layout
+
+## Setup
+
+1. Clone the repo and install dependencies:
    ```bash
+   git clone <your-repo-url>
+   cd hbplus-auth
    npm install
    ```
-
-2. Start the app
-
+2. Create a Firebase project.
+   - Enable **Authentication, Sign-in method, Google**.
+   - Create a **Firestore Database**.
+   - Add a **Web app** and copy its config values.
+3. Copy `.env.example` to `.env` and fill in the values:
+   ```
+   EXPO_PUBLIC_FIREBASE_API_KEY=
+   EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN=
+   EXPO_PUBLIC_FIREBASE_PROJECT_ID=
+   EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET=
+   EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=
+   EXPO_PUBLIC_FIREBASE_APP_ID=
+   EXPO_PUBLIC_ALLOWED_DOMAIN=hbplus.fit
+   ```
+4. In **Firebase, Authentication, Settings, Authorized domains**, make sure `localhost` and your deployed domain are listed.
+5. Add these Firestore rules:
+   ```
+   rules_version = '2';
+   service cloud.firestore {
+     match /databases/{database}/documents {
+       match /users/{uid} {
+         allow read, write: if request.auth != null
+           && request.auth.uid == uid
+           && request.auth.token.email.matches('.*@hbplus[.]fit')
+           && request.auth.token.email_verified == true;
+       }
+     }
+   }
+   ```
+6. Run the app:
    ```bash
    npx expo start
    ```
+   Press `w` for web or `a` for an Android emulator. Use `npx expo start -c` after changing `.env`.
 
-In the output, you'll find options to open the app in a
+## Deployment (Netlify)
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+- Build command: `npx expo export --platform web`
+- Publish directory: `dist`
+- `app.json` uses `"web": { "output": "single" }` so a static single-page build is produced.
+- `public/_redirects` contains `/* /index.html 200` so direct URLs like `/dashboard` do not 404.
+- Add all `EXPO_PUBLIC_*` variables in Netlify environment variables. They are baked in at build time, so redeploy after changing them.
 
-You can start developing by editing the files inside the **src/app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## Authentication flow
 
-## Get a fresh project
+1. The user clicks **Login with Google** and a Google popup opens.
+2. Firebase returns the signed-in user.
+3. `onAuthStateChanged` in `AuthContext` checks the email domain.
+4. **Allowed domain:** the user profile is saved to Firestore and the user is redirected to `/dashboard`.
+5. **Any other domain:** the user is signed out immediately and sees:
+   > Access restricted. Please login using your official domain email.
+6. **Logout** signs out of Firebase and returns to `/login`.
 
-When you're ready, run:
+## How domain restriction works
 
-```bash
-npm run reset-project
+- **Client side:** `src/utils/domain.ts` checks that the email ends with `@<EXPO_PUBLIC_ALLOWED_DOMAIN>`. The check lives in one place, `onAuthStateChanged`, so it also applies to sessions restored after a page refresh.
+- **Server side:** the Firestore rules only allow access when the token email matches `@hbplus.fit` and is verified, so the restriction cannot be bypassed from the browser.
+- The allowed domain is an environment variable, so it can change without editing code.
+
+## Route protection
+
+Every screen inside `src/app/(protected)/` is wrapped by a layout that checks authentication. While Firebase restores the session a loader is shown, and if there is no user the app redirects to `/login`. Opening `/dashboard` directly while logged out sends the user to the login page.
+
+## Token handling
+
+- Authentication is handled by the Firebase SDK, which manages ID tokens and refresh tokens and persists the session.
+- No tokens or credentials are stored manually or written to the repo.
+- `.env` is git-ignored. Only `.env.example` is committed.
+
+## Folder structure
+
+```
+src/
+  app/
+    _layout.tsx          # AuthProvider wrapper
+    index.tsx            # redirects based on auth state
+    login.tsx            # login page
+    (protected)/
+      _layout.tsx        # route guard
+      dashboard.tsx      # protected dashboard
+  context/AuthContext.tsx  # user, loading, error, login, logout
+  services/
+    firebase.ts          # Firebase init
+    users.ts             # saves user profile to Firestore
+  utils/domain.ts        # domain validation
+  constants/theme.ts
+public/_redirects        # SPA fallback for Netlify
 ```
 
-This command will move the starter code to the **example** directory and create a blank **src/app** directory where you can start developing.
+## Testing notes
 
-### Other setup steps
+I do not have an `@hbplus.fit` account. The blocked path was verified by logging in with a Gmail account against `hbplus.fit`. The allowed path was verified by temporarily setting `EXPO_PUBLIC_ALLOWED_DOMAIN=gmail.com` locally. The deployed build uses `hbplus.fit`.
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+## Screenshots
 
-## Learn more
+| Login | Blocked domain | Dashboard |
+|---|---|---|
+| ![Login](screenshots/login.png) | ![Blocked](screenshots/blocked.png) | ![Dashboard](screenshots/dashboard.png) |
 
-To learn more about developing your project with Expo, look at the following resources:
+## Not implemented
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+- Native (Android/iOS) Google sign-in. The UI and route guard work on mobile, but the login button is implemented for web only.
+- Role-based access (bonus).
