@@ -126,9 +126,7 @@ I do not have an `@hbplus.fit` account. The blocked path was verified by logging
 
 | Login | Blocked domain | Firesotre |
 |---|---|---|
-| <img width="1908" height="990" alt="image" src="https://github.com/user-attachments/assets/44d555c8-602f-49bf-b664-7ed467564ca6" /> |<img width="1911" height="948" alt="image" src="https://github.com/user-attachments/assets/dcc638e7-3a01-4284-9717-db99381d6594" />
- | <img width="1907" height="862" alt="image" src="https://github.com/user-attachments/assets/f6476dda-7145-4b04-a9af-ce761c6302a6" />
- |
+| <img width="1908" height="990" alt="image" src="https://github.com/user-attachments/assets/44d555c8-602f-49bf-b664-7ed467564ca6" /> | <img width="1911" height="948" alt="image" src="https://github.com/user-attachments/assets/dcc638e7-3a01-4284-9717-db99381d6594" /> | <img width="1907" height="862" alt="image" src="https://github.com/user-attachments/assets/f6476dda-7145-4b04-a9af-ce761c6302a6" /> |
 
 ## Not implemented
 
