@@ -126,7 +126,9 @@ I do not have an `@hbplus.fit` account. The blocked path was verified by logging
 
 | Login | Blocked domain | Dashboard |
 |---|---|---|
-| ![Login](screenshots/login.png) | ![Blocked](screenshots/blocked.png) | ![Dashboard](screenshots/dashboard.png) |
+| <img width="1908" height="990" alt="image" src="https://github.com/user-attachments/assets/44d555c8-602f-49bf-b664-7ed467564ca6" />
+ | <img width="1907" height="862" alt="image" src="https://github.com/user-attachments/assets/f6476dda-7145-4b04-a9af-ce761c6302a6" />
+ |
 
 ## Not implemented
 
