@@ -130,5 +130,4 @@ I do not have an `@hbplus.fit` account. The blocked path was verified by logging
 
 ## Not implemented
 
-- Native (Android/iOS) Google sign-in. The UI and route guard work on mobile, but the login button is implemented for web only.
 - Role-based access (bonus).
